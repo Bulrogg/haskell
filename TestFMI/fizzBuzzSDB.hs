@@ -19,3 +19,6 @@ main = mapM_ print $ map (\n->show n ++ " - " ++ fb n) [1..100]
 --mapM_ :: Monad m => (a -> m b) -> [a] -> m ()
 --Data.Monoid.mconcat :: [a] -> a
 --id :: a -> a
+--print :: Show a => a -> IO ()
+--map :: (a -> b) -> [a] -> [b]
+--mconcat :: Monoid a => [a] -> a
