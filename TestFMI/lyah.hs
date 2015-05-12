@@ -1,3 +1,5 @@
+import Data.Function (on)
+
 -------------------- Je suis une liste en compréhension
 
 -- ghci> [x*2 | x <- [1..10], x*2 >= 12]
@@ -22,6 +24,15 @@ rightTriangles = [ (a,b,c) | c <- [1..10], b <- [1..c], a <- [1..b], a^2 + b^2 =
 -------------------- Classes de types 101
 
 -- Eq, Ord, Show, Read, Enum, Bounded, Num
+
+-- ghci> :t read
+-- read :: (Read a) => String -> a
+
+-- ghci> read "5" :: Int       5
+-- ghci> read "5" :: Float     5.0
+-- ghci> (read "5" :: Float) * 4        20.0
+-- ghci> read "[1,2,3,4]" :: [Int]      [1,2,3,4]
+-- ghci> read "(3, 'a')" :: (Int, Char)   (3, 'a')
 
 -------------------- Syntaxe des fonctions
 
@@ -204,7 +215,96 @@ map' :: (a -> b) -> [a] -> [b]
 map' f xs = foldr (\x acc -> f x : acc) [] xs
 -- pli droite OK pour les listes infinies
 
+maximum' :: (Ord a) => [a] -> a
+maximum' = foldr1 (\x acc -> if x > acc then x else acc)
+
+reverse' :: [a] -> [a]
+--reverse' = foldl (\acc x -> x : acc) []
+reverse' = foldl (flip (:)) []
+
+product' :: (Num a) => [a] -> a
+product' = foldr1 (*)
+
+filter' :: (a -> Bool) -> [a] -> [a]
+filter' p = foldr (\x acc -> if p x then x : acc else acc) []
+
+-- ghci> scanl (+) 0 [3,5,2,1]            [0,3,8,10,11]
+-- ghci> scanr (+) 0 [3,5,2,1]            [11,8,3,1,0]
+-- ghci> scanl1 (\acc x -> if x > acc then x else acc) [3,4,5,3,7,9,2,1]              [3,4,5,5,7,9,9,9]
+-- ghci> scanl (flip (:)) [] [3,2,1]      [[],[3],[2,3],[1,2,3]]
+
+sqrtSums :: Int
+sqrtSums = length (takeWhile (<1000) (scanl1 (+) (map sqrt [1..]))) + 1
 
 
+------------------- Appliquer des fonctions avec $  (application de fonction) association a droite
 
+-- ghci> :t ($)
+-- ($) :: (a -> b) -> a -> b
+-- f $ x = f x
+
+-- f (g (z x))    ====     f $ g $ z x
+
+-- ghci> map ($ 3) [(4+), (10*), (^2), sqrt]         [7.0,30.0,9.0,1.7320508075688772]
+
+------------------- Composition de fonctions
+
+-- ghci> :t (.)
+-- (.) :: (b -> c) -> (a -> b) -> a -> c
+-- f . g = \x -> f (g x)
+
+-- ghci> map (negate . abs) [5,-3,-6,7,-3,2,-19,24]
+
+-- ghci> map (negate . sum . tail) [[1..5],[3..6],[1..7]]       [-14,-15,-27]
+
+-- sum . replicate 5 . max 6.7 $ 8.9
+
+
+-- replicate 100 . product . map (*3) . zipWith max [1, 2, 3, 4, 5] $ [4, 5, 6, 7, 8]
+
+-- fn x = ceiling (negate (tan (cos (max 50 x))))
+fn = ceiling . negate . tan . cos . max 50   -- style sans point (sans but)
+
+oddSquareSum :: Integer
+oddSquareSum = sum . takeWhile (<10000) . filter odd . map (^2) $ [1..]
+
+--oddSquareSum =
+--	let 
+--		oddSquares = filter odd $ map (^2) [1..]
+--		belowLimit = takeWhile (<10000) oddSquares
+--	in 
+--	sum belowLimit
+
+------------------------ Modules
+
+-- ghci> :m + Data.List Data.Map Data.Set
+
+-- Data.List / Data.Map / Data.Set / Data.Function
+
+-- import Data.List (nub, sort)
+
+-- import Data.List hiding (nub)
+
+-- import qualified Data.Map         -->  Data.Map.filter
+
+-- import qualified Data.Map as M    --> M.filter
+
+-- import Data.List
+-- intersperse / intercalate / transpose / concat / concatMap / and / or / any / all /
+-- iterate / splitAt / takeWhile / dropWhile / span / break / sort / group / inits / tails /
+-- init / tail / head / last / isInfixOf / isPrefixOf / isSuffixOf / elem / notElem /
+-- partition / find / elemIndex / elemIndices / findIndex / zip / zipWith / lines / unlines /
+-- words / unwords / nub / delete / \\ / union / intersect / insert
+
+-- ghci> take 10 $ iterate (*2) 1
+-- ghci> let (a,b) = splitAt 3 "foobar" in b ++ a "barfoo"
+-- ghci> sum . takeWhile (<10000) . map (^3) $ [1..]
+-- ghci> map (\l@(x:xs) -> (x,length l)) . group . sort $ [1,1,1,1,2,2,2,2,3,3,2,2,2,5,6,7]
+-- ghci> sortBy (compare `on` snd) $ map (\l@(x:xs) -> (x,length l)) . group . sort $ [1,18,8,8,8,8,8,8,1,1,2,2,2,2,3,3,2,2,2,5,6,7]
+-- ghci> find (\(val,_,_,_) -> val > 1000) stock
+-- ghci> [1..10] \\ [2,5,9]         [1,3,4,6,7,8,10]
+-- ghci> insert 'g' $ ['a'..'f'] ++ ['h'..'z']
+
+-- ghci> let xs = [[5,4,5,4,4],[1,2,3],[3,5,4,3],[],[2],[2,2]]
+-- ghci> sortBy (compare `on` length) xs       [[],[2],[2,2],[1,2,3],[3,5,4,3],[5,4,5,4,4]]
 
